@@ -3,7 +3,7 @@
     <h1>Listado de personas</h1>
     <button
       class="mb-2 bg-success btn btn-succees float-end"
-      @click="agregarItem"
+      @click="abrirModal()"
     >
       <i class="fas fa-plus"></i>
     </button>
@@ -26,7 +26,7 @@
           <td>{{ item.edad }}</td>
           <td>{{ item.estado }}</td>
           <td>
-            <button class="btn btn-primary" @click="editarItem(index)">
+            <button class="btn btn-primary" @click="abrirModal(index)">
               <i class="fas fa-pencil-alt" />
             </button>
             <button class="btn btn-danger" @click="eliminarItem(index)">
@@ -41,30 +41,26 @@
         <p>Total de registros: {{ contador }}</p>
       </div>
     </div>
+    <FormPersona
+      ref="formPersona"
+      @guardarPersona="guardarPersona"
+      :persona="personaEditar"
+    />
   </div>
 </template>
 
 <script>
+import FormPersona from "./FormPersona.vue";
 export default {
   name: "tableCrud",
+  components: {
+    FormPersona,
+  },
   data() {
     return {
       contador: 0,
+      personaEditar: null,
       datos: [
-        {
-          nombre: "John Doe",
-          correo: "johndoe@example.com",
-          celular: "123-456-7890",
-          edad: 30,
-          estado: "Activo",
-        },
-        {
-          nombre: "John Doe",
-          correo: "johndoe@example.com",
-          celular: "123-456-7890",
-          edad: 30,
-          estado: "Activo",
-        },
         {
           nombre: "John Doe",
           correo: "johndoe@example.com",
@@ -76,18 +72,40 @@ export default {
     };
   },
   methods: {
-    editarItem(index) {},
-    eliminarItem(index) {},
-    agregarItem() {
-      this.datos.push({
-        nombre: "Nuevo Nombre",
-        correo: "nuevo@correo.com",
-        celular: "123-456-7890",
-        edad: 30,
-        estado: "Activo",
-      });
+    abrirModal(index) {
+      if (index == null) {
+        this.$refs.formPersona.resetForm();
+        this.personaEditar = null;
+      } else {
+        this.personaEditar = this.datos[index];
+        this.$refs.formPersona.abrirModal(this.personaEditar);
+      }
+      const modalElement = document.getElementById("formPersona");
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    },
+    guardarPersona(personaGuardar) {
+      if (this.personaEditar == null) {
+        this.datos.push(personaGuardar);
+      } else {
+        const index = this.datos.indexOf(this.personaEditar);
+        if (index != -1) {
+          this.datos[index] = personaGuardar;
+        }
+      }
+      this.personaEditar = null;
+      this.countPersonas();
+    },
+    eliminarItem(index) {
+      this.datos.splice(index, 1);
+      this.countPersonas();
+    },
+    countPersonas() {
       this.contador = this.datos.length;
     },
+  },
+  mounted() {
+    this.countPersonas();
   },
 };
 </script>
